@@ -3,192 +3,320 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>CDTV TOP100 総合分析</title>
 
-  <!-- CSV読み込み -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <!-- グラフ -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
   <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #fff;
+      --text: #20242c;
+      --muted: #667085;
+      --border: #d9dee8;
+      --accent: #315efb;
+      --warn-bg: #fff7ed;
+      --warn-border: #fed7aa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
         "Yu Gothic",
-        "Meiryo",
+        Meiryo,
         sans-serif;
 
-      margin: 0;
-      background: #f5f6f8;
-      color: #222;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header,
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
     }
 
     header {
-      max-width: 1200px;
-      margin: auto;
-      padding: 24px 16px 10px;
+      padding: 24px 16px 8px;
     }
 
     main {
-      max-width: 1200px;
-      margin: auto;
-      padding: 10px 16px 50px;
+      padding: 8px 16px 48px;
     }
 
     h1 {
-      margin-bottom: 5px;
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 20px;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 16px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
       padding: 16px;
       margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
     }
 
     .controls {
-      display: flex;
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(170px, 1fr));
       gap: 10px;
-      flex-wrap: wrap;
       align-items: end;
     }
 
     label {
       display: block;
-      font-size: 13px;
       margin-bottom: 5px;
-      color: #555;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
     }
 
     input,
     select,
     button {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: white;
+      color: var(--text);
+      padding: 8px 10px;
       font: inherit;
-      padding: 9px;
-      border-radius: 7px;
-      border: 1px solid #ccc;
     }
 
     button {
       cursor: pointer;
-      background: white;
+      font-weight: 700;
     }
 
     button:hover {
-      background: #f1f3f5;
+      background: #f8fafc;
+    }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .menu-section {
+      margin-top: 12px;
     }
 
     .menu {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns:
+        repeat(auto-fit, minmax(160px, 1fr));
       gap: 8px;
     }
 
     .summary {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      grid-template-columns:
+        repeat(auto-fit, minmax(145px, 1fr));
       gap: 10px;
     }
 
     .metric {
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px;
     }
 
     .metric-name {
+      color: var(--muted);
       font-size: 12px;
-      color: #666;
     }
 
     .metric-value {
       font-size: 20px;
-      font-weight: bold;
-      margin-top: 3px;
+      font-weight: 800;
+      margin-top: 4px;
     }
 
     .notice {
-      padding: 10px;
-      background: #fff5d8;
-      border: 1px solid #efd28a;
-      border-radius: 8px;
       margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      background: var(--warn-bg);
+      border: 1px solid var(--warn-border);
+      font-size: 13px;
+    }
+
+    .table-tools {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+
+    .table-tools button {
+      width: auto;
+      min-width: 150px;
     }
 
     .table-wrap {
       overflow: auto;
-      max-height: 650px;
-      border: 1px solid #ddd;
+      max-height: 680px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 14px;
+      background: #fff;
+      font-size: 13px;
     }
 
     th,
     td {
+      border-bottom: 1px solid var(--border);
       padding: 7px 9px;
-      border-bottom: 1px solid #ddd;
+      text-align: right;
       white-space: nowrap;
-      text-align: left;
     }
 
     th {
       position: sticky;
       top: 0;
-      background: #f4f5f7;
+      background: #f8fafc;
+      z-index: 1;
     }
 
-    #chartWrap {
-      height: 550px;
-    }
-
-    .search-result {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
+    th:first-child,
+    td:first-child,
+    .left {
       text-align: left;
+    }
+
+    tr:hover td {
+      background: #fafbff;
+    }
+
+    .chart-box {
+      position: relative;
+      min-height: 480px;
+    }
+
+    .search-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .search-results button {
+      margin-top: 5px;
+      text-align: left;
+    }
+
+    @media (max-width: 720px) {
+
+      .search-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-box {
+        min-height: 400px;
+      }
+
+      h1 {
+        font-size: 23px;
+      }
+
+      main,
+      header {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .card {
+        padding: 12px;
+      }
     }
   </style>
 </head>
 
+
 <body>
 
 <header>
-  <h1>CDTV TOP100 総合分析</h1>
-  <div>
-    CSVを選ぶだけでブラウザ上で分析します。
-    CSVはGitHubへアップロードされません。
-  </div>
+
+  <h1>
+    CDTV TOP100 総合分析
+  </h1>
+
+  <p class="muted">
+    CSVはブラウザ内で処理します。
+    GitHubへCSVを置く必要はありません。
+  </p>
+
 </header>
+
 
 <main>
 
-  <!-- CSV -->
+  <!-- ===================================================== -->
+  <!-- CSV / 基本設定 -->
+  <!-- ===================================================== -->
+
   <section class="card">
 
     <div class="controls">
 
       <div>
-        <label>CSVファイル</label>
+
+        <label>
+          CSVファイル
+        </label>
+
         <input
           id="csvFile"
           type="file"
           accept=".csv,text/csv"
         >
+
       </div>
 
+
       <div>
-        <label>ポイント方式</label>
+
+        <label>
+          ポイント方式
+        </label>
+
         <select id="pointMode">
-          <option value="log">
+
+          <option
+            value="log"
+            selected
+          >
             対数ポイント
           </option>
 
@@ -199,21 +327,112 @@
           <option value="reciprocal">
             100 / 順位
           </option>
+
         </select>
+
       </div>
 
+
       <div>
-        <label>表示件数</label>
+
+        <label>
+          ランキング表示件数
+        </label>
+
         <select id="topN">
+
           <option>10</option>
-          <option selected>20</option>
+
+          <option selected>
+            20
+          </option>
+
           <option>30</option>
+
           <option>50</option>
+
           <option>100</option>
+
         </select>
+
+      </div>
+
+
+      <div>
+
+        <label>
+          週間アーティスト表示数
+        </label>
+
+        <select id="artistTopN">
+
+          <option>5</option>
+
+          <option selected>
+            10
+          </option>
+
+          <option>15</option>
+
+          <option>20</option>
+
+          <option>30</option>
+
+        </select>
+
+      </div>
+
+
+      <div>
+
+        <label>
+          開始週
+        </label>
+
+        <input
+          id="startDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div>
+
+        <label>
+          終了週
+        </label>
+
+        <input
+          id="endDate"
+          type="date"
+        >
+
+      </div>
+
+
+      <div>
+
+        <button
+          id="applyFilter"
+          class="primary"
+        >
+          期間を適用・再集計
+        </button>
+
+      </div>
+
+
+      <div>
+
+        <button id="resetFilter">
+          全期間に戻す
+        </button>
+
       </div>
 
     </div>
+
 
     <div
       id="status"
@@ -225,14 +444,19 @@
   </section>
 
 
+  <!-- ===================================================== -->
   <!-- 概要 -->
+  <!-- ===================================================== -->
+
   <section
     id="summaryCard"
     class="card"
     hidden
   >
 
-    <h2>データ概要</h2>
+    <h2>
+      データ概要
+    </h2>
 
     <div
       id="summary"
@@ -244,84 +468,199 @@
   </section>
 
 
+  <!-- ===================================================== -->
   <!-- メニュー -->
+  <!-- ===================================================== -->
+
   <section
     id="menuCard"
     class="card"
     hidden
   >
 
-    <h2>分析</h2>
+    <h2>
+      分析メニュー
+    </h2>
 
-    <div class="menu">
 
-      <button data-action="points">
-        曲別ポイント
-      </button>
+    <div class="menu-section">
 
-      <button data-action="weeks">
-        登場週数
-      </button>
+      <h3>
+        曲
+      </h3>
 
-      <button data-action="streak">
-        連続登場週数
-      </button>
+      <div class="menu">
 
-      <button data-action="top10">
-        TOP10滞在週数
-      </button>
+        <button data-action="songPoints">
+          曲別ポイント
+        </button>
 
-      <button data-action="no1">
-        1位獲得週数
-      </button>
+        <button data-action="songWeeks">
+          登場週数
+        </button>
 
-      <button data-action="late">
-        遅咲き曲
-      </button>
+        <button data-action="songStreak">
+          連続登場
+        </button>
 
-      <button data-action="artists">
+        <button data-action="songTop10">
+          TOP10滞在
+        </button>
+
+        <button data-action="songNo1">
+          1位獲得
+        </button>
+
+        <button data-action="lateBloomers">
+          遅咲き曲
+        </button>
+
+        <button data-action="stableSongs">
+          順位安定曲
+        </button>
+
+        <button data-action="reentries">
+          再登場回数
+        </button>
+
+        <button data-action="biggestRise">
+          週間最大上昇
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="menu-section">
+
+      <h3>
         アーティスト
-      </button>
+      </h3>
 
-      <button data-action="share">
-        アーティスト勢力推移
-      </button>
+      <div class="menu">
 
-      <button data-action="quality">
-        データ品質チェック
-      </button>
+        <button data-action="artistPoints">
+          総合ポイント
+        </button>
 
-      <button data-action="number1">
-        週間1位変遷
-      </button>
+        <button data-action="weeklyArtistPoints">
+          週間ポイント【数値】
+        </button>
+
+        <button data-action="weeklyArtistShare">
+          週間シェア【数値】
+        </button>
+
+        <button data-action="weeklyArtistSongs">
+          週間ランクイン曲数【数値】
+        </button>
+
+        <button data-action="weeklyArtistTop10Songs">
+          週間TOP10曲数【数値】
+        </button>
+
+        <button data-action="artistConcentration">
+          週別集中度
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="menu-section">
+
+      <h3>
+        その他
+      </h3>
+
+      <div class="menu">
+
+        <button data-action="pointCompare">
+          3ポイント方式比較
+        </button>
+
+        <button data-action="quality">
+          データ品質チェック
+        </button>
+
+        <button data-action="no1History">
+          週間1位変遷
+        </button>
+
+      </div>
 
     </div>
 
   </section>
 
 
-  <!-- 曲検索 -->
+  <!-- ===================================================== -->
+  <!-- 検索 -->
+  <!-- ===================================================== -->
+
   <section
     id="searchCard"
     class="card"
     hidden
   >
 
-    <h2>曲を検索</h2>
+    <h2>
+      検索
+    </h2>
 
-    <input
-      id="songSearch"
-      type="search"
-      placeholder="曲名・アーティスト名を入力"
-      style="width:100%;"
-    >
 
-    <div id="searchResults"></div>
+    <div class="search-grid">
+
+      <div>
+
+        <label>
+          曲名 / アーティストから曲を検索
+        </label>
+
+        <input
+          id="songSearch"
+          type="search"
+          placeholder="例: ロビンソン / スピッツ"
+        >
+
+        <div
+          id="songSearchResults"
+          class="search-results"
+        ></div>
+
+      </div>
+
+
+      <div>
+
+        <label>
+          アーティストを検索
+        </label>
+
+        <input
+          id="artistSearch"
+          type="search"
+          placeholder="例: Mr.Children"
+        >
+
+        <div
+          id="artistSearchResults"
+          class="search-results"
+        ></div>
+
+      </div>
+
+    </div>
 
   </section>
 
 
-  <!-- 結果 -->
+  <!-- ===================================================== -->
+  <!-- 表 -->
+  <!-- ===================================================== -->
+
   <section
     id="resultCard"
     class="card"
@@ -332,14 +671,30 @@
       結果
     </h2>
 
-    <div id="resultInfo"></div>
+    <div
+      id="resultInfo"
+      class="muted"
+    ></div>
+
+
+    <div class="table-tools">
+
+      <button id="exportTable">
+        現在の表をCSV保存
+      </button>
+
+    </div>
+
 
     <div id="resultTable"></div>
 
   </section>
 
 
+  <!-- ===================================================== -->
   <!-- グラフ -->
+  <!-- ===================================================== -->
+
   <section
     id="chartCard"
     class="card"
@@ -350,8 +705,10 @@
       グラフ
     </h2>
 
-    <div id="chartWrap">
+    <div class="chart-box">
+
       <canvas id="chart"></canvas>
+
     </div>
 
   </section>
@@ -365,86 +722,140 @@
 
 
 // ============================================================
-// データ
+// グローバル
 // ============================================================
 
+let allLoadedRows = [];
+
 let rows = [];
+
 let allWeeks = [];
 
 let songStats = [];
+
 let artistStats = [];
 
 let currentChart = null;
 
 
+let currentTable = {
+
+  headers: [],
+
+  rows: [],
+
+  filename: "analysis.csv"
+
+};
+
+
+const $ =
+  id =>
+    document.getElementById(id);
+
+
 // ============================================================
-// 基本関数
+// 基本
 // ============================================================
 
-function $(id) {
-  return document.getElementById(id);
-}
+function esc(v) {
 
+  return String(v ?? "")
 
-function escapeHTML(value) {
-
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
-
-function average(values) {
-
-  if (!values.length) {
-    return 0;
-  }
-
-  return (
-    values.reduce((a, b) => a + b, 0)
-    / values.length
-  );
-}
-
-
-function median(values) {
-
-  if (!values.length) {
-    return 0;
-  }
-
-  const a = [...values]
-    .sort((x, y) => x - y);
-
-  const mid = Math.floor(a.length / 2);
-
-  if (a.length % 2) {
-    return a[mid];
-  }
-
-  return (
-    a[mid - 1] + a[mid]
-  ) / 2;
-}
-
-
-function standardDeviation(values) {
-
-  if (!values.length) {
-    return 0;
-  }
-
-  const avg = average(values);
-
-  const variance = average(
-    values.map(
-      x => (x - avg) ** 2
+    .replaceAll(
+      "&",
+      "&amp;"
     )
+
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+
+    .replaceAll(
+      '"',
+      "&quot;"
+    );
+
+}
+
+
+function mean(a) {
+
+  return a.length
+
+    ? a.reduce(
+        (x, y) => x + y,
+        0
+      ) / a.length
+
+    : 0;
+
+}
+
+
+function median(a) {
+
+  if (!a.length) {
+    return 0;
+  }
+
+
+  const b =
+    [...a]
+      .sort(
+        (x, y) => x - y
+      );
+
+
+  const m =
+    Math.floor(
+      b.length / 2
+    );
+
+
+  return b.length % 2
+
+    ? b[m]
+
+    : (
+        b[m - 1]
+        +
+        b[m]
+      ) / 2;
+
+}
+
+
+function stddev(a) {
+
+  if (!a.length) {
+    return 0;
+  }
+
+
+  const m =
+    mean(a);
+
+
+  return Math.sqrt(
+
+    mean(
+
+      a.map(
+        x =>
+          (x - m) ** 2
+      )
+
+    )
+
   );
 
-  return Math.sqrt(variance);
 }
 
 
@@ -452,232 +863,92 @@ function standardDeviation(values) {
 // ポイント
 // ============================================================
 
-function getPoint(rank) {
+function point(
+  rank,
+  mode = $("pointMode").value
+) {
 
-  const mode = $("pointMode").value;
-
-  if (mode === "linear") {
-
-    // 1位100点
-    // 100位1点
+  if (
+    mode === "linear"
+  ) {
 
     return 101 - rank;
+
   }
 
 
-  if (mode === "reciprocal") {
-
-    // 1位100
-    // 2位50
-    // 10位10
+  if (
+    mode === "reciprocal"
+  ) {
 
     return 100 / rank;
+
   }
 
 
-  // 対数ポイント
-  //
-  // 1位 = 100
-  // 10位 ≒ 50.5
-  // 100位 = 1
+  /*
+    対数ポイント
+
+    1位   = 100
+    10位 ≒ 50.5
+    100位 = 1
+  */
 
   return (
+
     1
-    + 99 *
+
+    +
+
+    99
+    *
     (
       1
-      - Math.log10(rank) / 2
+      -
+      Math.log10(rank) / 2
     )
+
   );
+
 }
 
 
-function pointName() {
+function pointLabel(
+  mode = $("pointMode").value
+) {
 
-  const mode = $("pointMode").value;
+  if (
+    mode === "linear"
+  ) {
 
-  if (mode === "linear") {
-    return "101 - 順位";
+    return "101-順位";
+
   }
 
-  if (mode === "reciprocal") {
-    return "100 / 順位";
+
+  if (
+    mode === "reciprocal"
+  ) {
+
+    return "100/順位";
+
   }
+
 
   return "対数ポイント";
+
 }
 
 
 // ============================================================
-// CSV読み込み
-// ============================================================
-
-$("csvFile")
-  .addEventListener(
-    "change",
-    event => {
-
-      const file =
-        event.target.files[0];
-
-      if (!file) {
-        return;
-      }
-
-      readCSV(file);
-    }
-  );
-
-
-function readCSV(file) {
-
-  $("status").textContent =
-    "CSV読み込み中…";
-
-
-  Papa.parse(
-    file,
-    {
-
-      header: true,
-
-      skipEmptyLines: true,
-
-      complete: result => {
-
-        const required =
-          [
-            "週",
-            "順位",
-            "曲名",
-            "アーティスト"
-          ];
-
-
-        const fields =
-          result.meta.fields || [];
-
-
-        const missing =
-          required.filter(
-            col => !fields.includes(col)
-          );
-
-
-        if (missing.length) {
-
-          $("status").innerHTML =
-            "必要な列がありません: "
-            + escapeHTML(
-              missing.join(", ")
-            );
-
-          return;
-        }
-
-
-        rows =
-          result.data
-            .map(normalizeRow)
-
-            .filter(
-              r =>
-                r.week &&
-                Number.isInteger(r.rank)
-            )
-
-            .sort(
-              (a, b) =>
-                a.week.localeCompare(b.week)
-                ||
-                a.rank - b.rank
-            );
-
-
-        if (!rows.length) {
-
-          $("status").textContent =
-            "有効なデータがありません。";
-
-          return;
-        }
-
-
-        allWeeks =
-          [
-            ...new Set(
-              rows.map(r => r.week)
-            )
-          ]
-          .sort();
-
-
-        rebuild();
-
-
-        showSummary(file.name);
-
-
-        $("menuCard").hidden = false;
-        $("searchCard").hidden = false;
-
-
-        showSongRanking(
-          "points",
-          "曲別ポイント"
-        );
-
-
-        $("status").textContent =
-          "読み込み完了";
-
-      },
-
-
-      error: error => {
-
-        $("status").textContent =
-          "CSV読み込みエラー: "
-          + error.message;
-
-      }
-
-    }
-  );
-}
-
-
-// ============================================================
-// 行を正規化
+// CSV
 // ============================================================
 
 function normalizeRow(r) {
 
-  const song =
+  const week =
     String(
-      r["正規化曲名"]
-      ||
-      r["曲名"]
-      ||
-      ""
-    ).trim();
-
-
-  const artist =
-    String(
-      r["正規化アーティスト"]
-      ||
-      r["アーティスト"]
-      ||
-      ""
-    ).trim();
-
-
-  const mainArtist =
-    String(
-      r["主要アーティスト"]
-      ||
-      artist
+      r["週"] || ""
     ).trim();
 
 
@@ -688,9 +959,63 @@ function normalizeRow(r) {
     );
 
 
-  const week =
+  const song =
     String(
-      r["週"] || ""
+
+      r["正規化曲名"]
+
+      ||
+
+      r["曲名"]
+
+      ||
+
+      ""
+
+    ).trim();
+
+
+  const artist =
+    String(
+
+      r["正規化アーティスト"]
+
+      ||
+
+      r["アーティスト"]
+
+      ||
+
+      ""
+
+    ).trim();
+
+
+  const mainArtist =
+    String(
+
+      r["主要アーティスト"]
+
+      ||
+
+      artist
+
+    ).trim();
+
+
+  const productId =
+    String(
+
+      r["商品ID"]
+
+      ||
+
+      r["曲ID"]
+
+      ||
+
+      `${artist}||${song}`
+
     ).trim();
 
 
@@ -706,9 +1031,101 @@ function normalizeRow(r) {
 
     artist,
 
-    mainArtist
+    mainArtist,
+
+    productId
 
   };
+
+}
+
+
+function validateRequiredColumns(
+  fields
+) {
+
+  const required = [
+
+    "週",
+
+    "順位",
+
+    "曲名",
+
+    "アーティスト"
+
+  ];
+
+
+  return required.filter(
+    c =>
+      !fields.includes(c)
+  );
+
+}
+
+
+// ============================================================
+// 期間
+// ============================================================
+
+function applyDateFilter() {
+
+  const start =
+    $("startDate").value;
+
+
+  const end =
+    $("endDate").value;
+
+
+  rows =
+    allLoadedRows.filter(
+      r => {
+
+        if (
+          start
+          &&
+          r.week < start
+        ) {
+
+          return false;
+
+        }
+
+
+        if (
+          end
+          &&
+          r.week > end
+        ) {
+
+          return false;
+
+        }
+
+
+        return true;
+
+      }
+    );
+
+
+  allWeeks =
+    [
+      ...new Set(
+        rows.map(
+          r => r.week
+        )
+      )
+    ]
+    .sort();
+
+
+  rebuild();
+
+  showSummary();
+
 }
 
 
@@ -719,76 +1136,275 @@ function normalizeRow(r) {
 function rebuild() {
 
   buildSongStats();
+
   buildArtistStats();
 
 }
 
 
-$("pointMode")
-  .addEventListener(
-    "change",
-    () => {
+// ============================================================
+// 連続登場
+// ============================================================
 
-      if (!rows.length) {
-        return;
+function longestStreak(
+  weeks
+) {
+
+  const present =
+    new Set(weeks);
+
+
+  let best = 0;
+
+  let cur = 0;
+
+
+  for (
+    const w
+    of allWeeks
+  ) {
+
+    if (
+      present.has(w)
+    ) {
+
+      cur++;
+
+      best =
+        Math.max(
+          best,
+          cur
+        );
+
+    }
+
+    else {
+
+      cur = 0;
+
+    }
+
+  }
+
+
+  return best;
+
+}
+
+
+// ============================================================
+// 再登場
+// ============================================================
+
+function countReentries(
+  weeks
+) {
+
+  const present =
+    new Set(weeks);
+
+
+  let seen = false;
+
+  let gap = false;
+
+  let n = 0;
+
+
+  for (
+    const w
+    of allWeeks
+  ) {
+
+    const now =
+      present.has(w);
+
+
+    if (now) {
+
+      if (
+        seen
+        &&
+        gap
+      ) {
+
+        n++;
+
       }
 
-      rebuild();
 
-      showSongRanking(
-        "points",
-        "曲別ポイント"
-      );
+      seen = true;
+
+      gap = false;
+
     }
-  );
+
+    else if (seen) {
+
+      gap = true;
+
+    }
+
+  }
+
+
+  return n;
+
+}
 
 
 // ============================================================
-// 曲別集計
+// 上昇・下落
 // ============================================================
 
-function buildSongStats() {
+function adjacentChanges(
+  items
+) {
+
+  let rise = 0;
+
+  let fall = 0;
+
+  let reentryRise = 0;
+
+
+  for (
+    let i = 1;
+    i < items.length;
+    i++
+  ) {
+
+    const a =
+      items[i - 1];
+
+
+    const b =
+      items[i];
+
+
+    const ai =
+      allWeeks.indexOf(
+        a.week
+      );
+
+
+    const bi =
+      allWeeks.indexOf(
+        b.week
+      );
+
+
+    const diff =
+      a.rank
+      -
+      b.rank;
+
+
+    /*
+      隣接ランキング週だけ
+      通常上昇として扱う
+    */
+
+    if (
+      bi === ai + 1
+    ) {
+
+      rise =
+        Math.max(
+          rise,
+          diff
+        );
+
+
+      fall =
+        Math.max(
+          fall,
+          -diff
+        );
+
+    }
+
+    else {
+
+      reentryRise =
+        Math.max(
+          reentryRise,
+          diff
+        );
+
+    }
+
+  }
+
+
+  return {
+
+    rise,
+
+    fall,
+
+    reentryRise
+
+  };
+
+}
+
+
+// ============================================================
+// 曲別統計
+// ============================================================
+
+function buildSongStatsForMode(
+  mode
+) {
 
   const groups =
     new Map();
 
 
-  for (const r of rows) {
+  for (
+    const r
+    of rows
+  ) {
 
     const key =
-      r.song
-      + "\u0000"
-      + r.artist;
+      `${r.song}\u0000${r.artist}`;
 
 
-    if (!groups.has(key)) {
+    if (
+      !groups.has(key)
+    ) {
 
       groups.set(
         key,
         []
       );
+
     }
 
 
     groups
       .get(key)
       .push(r);
+
   }
 
 
-  songStats = [];
+  const result = [];
 
 
   for (
-    const [key, items0]
+    const [key, rawItems]
     of groups.entries()
   ) {
 
     const items =
-      [...items0]
+      [...rawItems]
         .sort(
           (a, b) =>
-            a.week.localeCompare(b.week)
+            a.week.localeCompare(
+              b.week
+            )
         );
 
 
@@ -804,10 +1420,6 @@ function buildSongStats() {
       );
 
 
-    const bestRank =
-      Math.min(...ranks);
-
-
     const first =
       items[0];
 
@@ -818,6 +1430,12 @@ function buildSongStats() {
       ];
 
 
+    const bestRank =
+      Math.min(
+        ...ranks
+      );
+
+
     const bestIndex =
       items.findIndex(
         x =>
@@ -825,211 +1443,206 @@ function buildSongStats() {
       );
 
 
-    const points =
-      items.reduce(
-        (sum, x) =>
-          sum + getPoint(x.rank),
-        0
+    const changes =
+      adjacentChanges(
+        items
       );
 
 
-    songStats.push(
-      {
+    const totalPoints =
+      items.reduce(
 
-        key,
+        (s, x) =>
+          s
+          +
+          point(
+            x.rank,
+            mode
+          ),
 
-        song:
-          first.song,
+        0
 
-        artist:
-          first.artist,
-
-        entries:
-          items,
-
-        points,
-
-        weeks:
-          items.length,
-
-        streak:
-          longestStreak(weeks),
-
-        reentries:
-          countReentries(weeks),
-
-        bestRank,
-
-        worstRank:
-          Math.max(...ranks),
-
-        averageRank:
-          average(ranks),
-
-        medianRank:
-          median(ranks),
-
-        rankStd:
-          standardDeviation(ranks),
-
-        no1Weeks:
-          ranks.filter(
-            x => x === 1
-          ).length,
-
-        top3Weeks:
-          ranks.filter(
-            x => x <= 3
-          ).length,
-
-        top10Weeks:
-          ranks.filter(
-            x => x <= 10
-          ).length,
-
-        top20Weeks:
-          ranks.filter(
-            x => x <= 20
-          ).length,
-
-        debutRank:
-          first.rank,
-
-        lastRank:
-          last.rank,
-
-        firstDate:
-          first.week,
-
-        lastDate:
-          last.week,
-
-        debutToBest:
-          first.rank
-          - bestRank,
-
-        weeksToPeak:
-          bestIndex,
-
-        leftCensored:
-          first.week
-          === allWeeks[0],
-
-        rightCensored:
-          last.week
-          === allWeeks[
-            allWeeks.length - 1
-          ]
-
-      }
-    );
-  }
-}
+      );
 
 
-// ============================================================
-// 連続登場
-// ============================================================
+    const first3Points =
+      items
+        .slice(
+          0,
+          3
+        )
+        .reduce(
 
-function longestStreak(weeks) {
+          (s, x) =>
+            s
+            +
+            point(
+              x.rank,
+              mode
+            ),
 
-  const set =
-    new Set(weeks);
+          0
 
-
-  let best = 0;
-  let current = 0;
-
-
-  for (const week of allWeeks) {
-
-    if (set.has(week)) {
-
-      current++;
-
-      best =
-        Math.max(
-          best,
-          current
         );
 
-    }
-    else {
 
-      current = 0;
+    result.push({
 
-    }
+      key,
+
+      song:
+        first.song,
+
+      artist:
+        first.artist,
+
+      entries:
+        items,
+
+      points:
+        totalPoints,
+
+      weeks:
+        items.length,
+
+      streak:
+        longestStreak(
+          weeks
+        ),
+
+      reentries:
+        countReentries(
+          weeks
+        ),
+
+      bestRank,
+
+      worstRank:
+        Math.max(
+          ...ranks
+        ),
+
+      avgRank:
+        mean(
+          ranks
+        ),
+
+      medianRank:
+        median(
+          ranks
+        ),
+
+      rankStd:
+        stddev(
+          ranks
+        ),
+
+      no1Weeks:
+        ranks.filter(
+          x => x === 1
+        ).length,
+
+      top3Weeks:
+        ranks.filter(
+          x => x <= 3
+        ).length,
+
+      top10Weeks:
+        ranks.filter(
+          x => x <= 10
+        ).length,
+
+      top20Weeks:
+        ranks.filter(
+          x => x <= 20
+        ).length,
+
+      firstDate:
+        first.week,
+
+      lastDate:
+        last.week,
+
+      debutRank:
+        first.rank,
+
+      lastRank:
+        last.rank,
+
+      debutToBest:
+        first.rank
+        -
+        bestRank,
+
+      weeksToPeak:
+        bestIndex,
+
+      biggestRise:
+        changes.rise,
+
+      biggestFall:
+        changes.fall,
+
+      biggestReentryRise:
+        changes.reentryRise,
+
+      earlyShare:
+        totalPoints
+          ? first3Points
+            /
+            totalPoints
+          : 0,
+
+      leftCensored:
+        first.week
+        ===
+        allWeeks[0],
+
+      rightCensored:
+        last.week
+        ===
+        allWeeks[
+          allWeeks.length - 1
+        ]
+
+    });
 
   }
 
 
-  return best;
+  return result;
+
+}
+
+
+function buildSongStats() {
+
+  songStats =
+    buildSongStatsForMode(
+      $("pointMode").value
+    );
+
 }
 
 
 // ============================================================
-// 再登場
-// ============================================================
-
-function countReentries(weeks) {
-
-  const present =
-    new Set(weeks);
-
-
-  let appeared = false;
-  let disappeared = false;
-
-  let count = 0;
-
-
-  for (const week of allWeeks) {
-
-    const now =
-      present.has(week);
-
-
-    if (now) {
-
-      if (
-        appeared
-        &&
-        disappeared
-      ) {
-
-        count++;
-
-        disappeared = false;
-      }
-
-
-      appeared = true;
-
-    }
-    else if (appeared) {
-
-      disappeared = true;
-
-    }
-
-  }
-
-
-  return count;
-}
-
-
-// ============================================================
-// アーティスト集計
+// アーティスト統計
 // ============================================================
 
 function buildArtistStats() {
+
+  const mode =
+    $("pointMode").value;
+
 
   const groups =
     new Map();
 
 
-  for (const r of rows) {
+  for (
+    const r
+    of rows
+  ) {
 
     if (
       !groups.has(
@@ -1041,12 +1654,16 @@ function buildArtistStats() {
         r.mainArtist,
         []
       );
+
     }
 
 
     groups
-      .get(r.mainArtist)
+      .get(
+        r.mainArtist
+      )
       .push(r);
+
   }
 
 
@@ -1066,53 +1683,202 @@ function buildArtistStats() {
 
     const songs =
       new Set(
+
         items.map(
           x =>
-            x.song
-            + "\u0000"
-            + x.artist
+            `${x.song}\u0000${x.artist}`
         )
+
       );
 
 
     const weeks =
       new Set(
+
         items.map(
           x => x.week
         )
+
       );
 
 
-    artistStats.push(
-      {
+    const byWeek =
+      new Map();
 
-        artist,
 
-        points:
-          items.reduce(
-            (sum, x) =>
-              sum
-              + getPoint(x.rank),
-            0
-          ),
+    const bySongPoints =
+      new Map();
 
-        songs:
-          songs.size,
 
-        chartWeeks:
-          weeks.size,
+    for (
+      const r
+      of items
+    ) {
 
-        bestRank:
-          Math.min(...ranks),
+      if (
+        !byWeek.has(
+          r.week
+        )
+      ) {
 
-        top10Weeks:
-          ranks.filter(
-            x => x <= 10
-          ).length
+        byWeek.set(
+          r.week,
+          []
+        );
 
       }
-    );
+
+
+      byWeek
+        .get(
+          r.week
+        )
+        .push(r);
+
+
+      const sk =
+        `${r.song}\u0000${r.artist}`;
+
+
+      bySongPoints.set(
+
+        sk,
+
+        (
+          bySongPoints.get(sk)
+          ||
+          0
+        )
+
+        +
+
+        point(
+          r.rank,
+          mode
+        )
+
+      );
+
+    }
+
+
+    let maxSimultaneous = 0;
+
+    let maxTop10Simultaneous = 0;
+
+
+    for (
+      const weekItems
+      of byWeek.values()
+    ) {
+
+      maxSimultaneous =
+        Math.max(
+
+          maxSimultaneous,
+
+          weekItems.length
+
+        );
+
+
+      maxTop10Simultaneous =
+        Math.max(
+
+          maxTop10Simultaneous,
+
+          weekItems.filter(
+            x =>
+              x.rank <= 10
+          ).length
+
+        );
+
+    }
+
+
+    const bestSongKey =
+      [
+        ...bySongPoints.entries()
+      ]
+
+      .sort(
+        (a, b) =>
+          b[1] - a[1]
+      )[0]?.[0]
+
+      ||
+
+      "";
+
+
+    const bestSong =
+      bestSongKey
+        .split(
+          "\u0000"
+        )[0]
+      ||
+      "";
+
+
+    artistStats.push({
+
+      artist,
+
+      points:
+        items.reduce(
+
+          (s, x) =>
+            s
+            +
+            point(
+              x.rank,
+              mode
+            ),
+
+          0
+
+        ),
+
+      songs:
+        songs.size,
+
+      chartWeeks:
+        weeks.size,
+
+      songWeeks:
+        items.length,
+
+      bestRank:
+        Math.min(
+          ...ranks
+        ),
+
+      avgRank:
+        mean(
+          ranks
+        ),
+
+      no1SongWeeks:
+        ranks.filter(
+          x => x === 1
+        ).length,
+
+      top10SongWeeks:
+        ranks.filter(
+          x => x <= 10
+        ).length,
+
+      maxSimultaneous,
+
+      maxTop10Simultaneous,
+
+      bestSong
+
+    });
+
   }
+
 }
 
 
@@ -1120,7 +1886,16 @@ function buildArtistStats() {
 // 概要
 // ============================================================
 
-function showSummary(filename) {
+function showSummary() {
+
+  if (
+    !rows.length
+  ) {
+
+    return;
+
+  }
+
 
   $("summaryCard").hidden =
     false;
@@ -1135,28 +1910,22 @@ function showSummary(filename) {
     ).length;
 
 
+  const first =
+    allWeeks[0];
+
+
+  const last =
+    allWeeks[
+      allWeeks.length - 1
+    ];
+
+
   $("summary").innerHTML = `
 
     <div class="metric">
 
       <div class="metric-name">
-        CSV
-      </div>
-
-      <div class="metric-value"
-           style="font-size:14px">
-
-        ${escapeHTML(filename)}
-
-      </div>
-
-    </div>
-
-
-    <div class="metric">
-
-      <div class="metric-name">
-        データ行数
+        行数
       </div>
 
       <div class="metric-value">
@@ -1211,10 +1980,12 @@ function showSummary(filename) {
         期間
       </div>
 
-      <div class="metric-value"
-           style="font-size:14px">
+      <div
+        class="metric-value"
+        style="font-size:14px"
+      >
 
-        ${allWeeks[0]}
+        ${first}
 
         <br>
 
@@ -1222,11 +1993,25 @@ function showSummary(filename) {
 
         <br>
 
-        ${
-          allWeeks[
-            allWeeks.length - 1
-          ]
-        }
+        ${last}
+
+      </div>
+
+    </div>
+
+
+    <div class="metric">
+
+      <div class="metric-name">
+        ポイント方式
+      </div>
+
+      <div
+        class="metric-value"
+        style="font-size:14px"
+      >
+
+        ${esc(pointLabel())}
 
       </div>
 
@@ -1239,21 +2024,20 @@ function showSummary(filename) {
 
     <div class="notice">
 
-      集計期間の最初または最後の週に
-      ランクインしている曲は
+      期間の最初または最後の週に
+      接している曲は
 
       <b>
         ${edgeSongs}曲
-      </b>
+      </b>。
 
-      あります。
-
-      これらは期間外の実績が
+      期間外の実績が
       切れている可能性があります。
 
     </div>
 
   `;
+
 }
 
 
@@ -1261,13 +2045,41 @@ function showSummary(filename) {
 // 表
 // ============================================================
 
+function setCurrentTable(
+  headers,
+  tableRows,
+  filename
+) {
+
+  currentTable = {
+
+    headers,
+
+    rows:
+      tableRows,
+
+    filename
+
+  };
+
+}
+
+
 function showTable(
   headers,
-  data
+  tableRows,
+  filename = "analysis.csv"
 ) {
 
   $("resultCard").hidden =
     false;
+
+
+  setCurrentTable(
+    headers,
+    tableRows,
+    filename
+  );
 
 
   let html =
@@ -1279,10 +2091,14 @@ function showTable(
     `;
 
 
-  for (const h of headers) {
+  for (
+    const h
+    of headers
+  ) {
 
     html +=
-      `<th>${escapeHTML(h)}</th>`;
+      `<th>${esc(h)}</th>`;
+
   }
 
 
@@ -1294,19 +2110,30 @@ function showTable(
     `;
 
 
-  for (const row of data) {
+  for (
+    const row
+    of tableRows
+  ) {
 
     html += "<tr>";
 
 
-    for (const value of row) {
+    row.forEach(
+      (cell, i) => {
 
-      html +=
-        `<td>${value}</td>`;
-    }
+        html +=
+          `
+          <td class="${i === 0 ? "left" : ""}">
+            ${esc(cell)}
+          </td>
+          `;
+
+      }
+    );
 
 
     html += "</tr>";
+
   }
 
 
@@ -1320,16 +2147,223 @@ function showTable(
 
   $("resultTable").innerHTML =
     html;
+
 }
 
 
 // ============================================================
-// 曲別ランキング
+// Chart
+// ============================================================
+
+function destroyChart() {
+
+  if (
+    currentChart
+  ) {
+
+    currentChart.destroy();
+
+    currentChart = null;
+
+  }
+
+}
+
+
+function showBarChart(
+  title,
+  labels,
+  values,
+  label
+) {
+
+  $("chartCard").hidden =
+    false;
+
+
+  $("chartTitle").textContent =
+    title;
+
+
+  destroyChart();
+
+
+  currentChart =
+    new Chart(
+
+      $("chart"),
+
+      {
+
+        type: "bar",
+
+        data: {
+
+          labels,
+
+          datasets:
+            [
+
+              {
+
+                label,
+
+                data:
+                  values
+
+              }
+
+            ]
+
+        },
+
+
+        options: {
+
+          indexAxis:
+            "y",
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+          plugins: {
+
+            legend: {
+
+              display:
+                false
+
+            }
+
+          },
+
+          scales: {
+
+            x: {
+
+              beginAtZero:
+                true
+
+            }
+
+          }
+
+        }
+
+      }
+
+    );
+
+}
+
+
+function showMultiLineChart(
+  title,
+  labels,
+  series,
+  yTitle
+) {
+
+  $("chartCard").hidden =
+    false;
+
+
+  $("chartTitle").textContent =
+    title;
+
+
+  destroyChart();
+
+
+  currentChart =
+    new Chart(
+
+      $("chart"),
+
+      {
+
+        type:
+          "line",
+
+        data: {
+
+          labels,
+
+          datasets:
+            series.map(
+              s => ({
+
+                label:
+                  s.label,
+
+                data:
+                  s.data,
+
+                pointRadius:
+                  2,
+
+                tension:
+                  0.15,
+
+                spanGaps:
+                  false
+
+              })
+            )
+
+        },
+
+
+        options: {
+
+          responsive:
+            true,
+
+          maintainAspectRatio:
+            false,
+
+          scales: {
+
+            y: {
+
+              beginAtZero:
+                true,
+
+              title: {
+
+                display:
+                  true,
+
+                text:
+                  yTitle
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+
+    );
+
+}
+
+
+// ============================================================
+// 曲ランキング
 // ============================================================
 
 function showSongRanking(
   key,
-  title
+  title,
+  ascending = false,
+  filterFn = null
 ) {
 
   const n =
@@ -1338,87 +2372,114 @@ function showSongRanking(
     );
 
 
-  const data =
-    [...songStats]
+  let data =
+    filterFn
 
-      .sort(
-        (a, b) =>
-          b[key] - a[key]
-      )
+      ? songStats.filter(
+          filterFn
+        )
 
-      .slice(
-        0,
-        n
-      );
+      : [...songStats];
+
+
+  data.sort(
+    (a, b) =>
+
+      ascending
+
+        ? a[key] - b[key]
+
+        : b[key] - a[key]
+  );
+
+
+  data =
+    data.slice(
+      0,
+      n
+    );
 
 
   $("resultTitle").textContent =
     `${title} TOP${n}`;
 
 
-  $("resultInfo").innerHTML =
-    `
-    ポイント方式:
-    ${escapeHTML(pointName())}
-    `;
+  $("resultInfo").textContent =
+    `ポイント方式: ${pointLabel()}`;
 
 
-  showTable(
-    [
-      "順位",
-      "曲名",
-      "アーティスト",
-      title,
-      "登場週",
-      "最高順位",
-      "期間端"
-    ],
-
+  const table =
     data.map(
-      (s, index) =>
+      (s, i) =>
         [
 
-          index + 1,
+          i + 1,
 
-          escapeHTML(
-            s.song
-          ),
+          s.song,
 
-          escapeHTML(
-            s.artist
-          ),
+          s.artist,
 
           typeof s[key] === "number"
 
-            ? s[key].toFixed(1)
+            ? Number(
+                s[key].toFixed(2)
+              )
 
             : s[key],
 
           s.weeks,
 
-          s.bestRank + "位",
+          s.bestRank,
 
           (
             s.leftCensored
             ||
             s.rightCensored
           )
+
             ? "⚠"
+
             : ""
 
         ]
-    )
+    );
+
+
+  showTable(
+
+    [
+
+      "順位",
+
+      "曲名",
+
+      "アーティスト",
+
+      title,
+
+      "登場週",
+
+      "最高順位",
+
+      "期間端"
+
+    ],
+
+    table,
+
+    `${title}.csv`
+
   );
 
 
   showBarChart(
-    title,
+
+    `${title} TOP${n}`,
+
     data
       .map(
         s =>
-          s.song
-          + " / "
-          + s.artist
+          `${s.song} / ${s.artist}`
       )
       .reverse(),
 
@@ -1426,8 +2487,12 @@ function showSongRanking(
       .map(
         s => s[key]
       )
-      .reverse()
+      .reverse(),
+
+    title
+
   );
+
 }
 
 
@@ -1447,31 +2512,34 @@ function showLateBloomers() {
     [...songStats]
 
       .filter(
-        x =>
-          x.weeks >= 3
+        s =>
+          s.weeks >= 3
+      )
+
+      .map(
+        s => ({
+
+          ...s,
+
+          lateScore:
+
+            s.debutToBest
+
+            *
+
+            Math.max(
+              1,
+              s.weeksToPeak
+            )
+
+        })
       )
 
       .sort(
-        (a, b) => {
-
-          const scoreA =
-            a.debutToBest
-            * Math.max(
-                1,
-                a.weeksToPeak
-              );
-
-
-          const scoreB =
-            b.debutToBest
-            * Math.max(
-                1,
-                b.weeksToPeak
-              );
-
-
-          return scoreB - scoreA;
-        }
+        (a, b) =>
+          b.lateScore
+          -
+          a.lateScore
       )
 
       .slice(
@@ -1484,19 +2552,30 @@ function showLateBloomers() {
     `遅咲き曲 TOP${n}`;
 
 
-  $("resultInfo").innerHTML =
-    "初登場順位から大きく上昇し、ピークまで時間がかかった曲";
+  $("resultInfo").textContent =
+    "上昇幅 × 最高順位到達までの週数。単なる一週急騰より、時間をかけて伸びた曲を評価。";
 
 
   showTable(
+
     [
+
       "順位",
+
       "曲名",
+
       "アーティスト",
-      "初登場",
-      "最高",
-      "上昇",
-      "ピーク到達"
+
+      "初登場順位",
+
+      "最高順位",
+
+      "上昇幅",
+
+      "ピークまで",
+
+      "遅咲きスコア"
+
     ],
 
     data.map(
@@ -1505,56 +2584,55 @@ function showLateBloomers() {
 
           i + 1,
 
-          escapeHTML(
-            s.song
-          ),
+          s.song,
 
-          escapeHTML(
-            s.artist
-          ),
+          s.artist,
 
-          s.debutRank + "位",
+          s.debutRank,
 
-          s.bestRank + "位",
+          s.bestRank,
 
           s.debutToBest,
 
-          s.weeksToPeak + "週後"
+          s.weeksToPeak,
+
+          s.lateScore
 
         ]
-    )
+    ),
+
+    "late_bloomers.csv"
+
   );
 
 
   showBarChart(
+
     "遅咲き曲",
 
     data
       .map(
         s =>
-          s.song
-          + " / "
-          + s.artist
+          `${s.song} / ${s.artist}`
       )
       .reverse(),
 
     data
       .map(
         s =>
-          s.debutToBest
-          *
-          Math.max(
-            1,
-            s.weeksToPeak
-          )
+          s.lateScore
       )
-      .reverse()
+      .reverse(),
+
+    "遅咲きスコア"
+
   );
+
 }
 
 
 // ============================================================
-// アーティストランキング
+// アーティスト総合
 // ============================================================
 
 function showArtistRanking() {
@@ -1580,307 +2658,949 @@ function showArtistRanking() {
 
 
   $("resultTitle").textContent =
-    `アーティスト別 TOP${n}`;
+    `アーティスト総合ポイント TOP${n}`;
 
 
-  $("resultInfo").innerHTML =
-    `
-    ポイント方式:
-    ${escapeHTML(pointName())}
-    `;
+  $("resultInfo").textContent =
+    `ポイント方式: ${pointLabel()}`;
 
 
   showTable(
+
     [
+
       "順位",
+
       "アーティスト",
+
       "ポイント",
+
       "曲数",
+
       "登場週",
+
+      "掲載曲週",
+
       "最高順位",
-      "TOP10曲週"
+
+      "平均順位",
+
+      "1位曲週",
+
+      "TOP10曲週",
+
+      "同時ランクイン最大",
+
+      "同時TOP10最大",
+
+      "最高ポイント曲"
+
     ],
 
     data.map(
-      (s, i) =>
+      (a, i) =>
         [
 
           i + 1,
 
-          escapeHTML(
-            s.artist
-          ),
+          a.artist,
 
-          s.points.toFixed(1),
+          a.points.toFixed(1),
 
-          s.songs,
+          a.songs,
 
-          s.chartWeeks,
+          a.chartWeeks,
 
-          s.bestRank + "位",
+          a.songWeeks,
 
-          s.top10Weeks
+          a.bestRank,
+
+          a.avgRank.toFixed(2),
+
+          a.no1SongWeeks,
+
+          a.top10SongWeeks,
+
+          a.maxSimultaneous,
+
+          a.maxTop10Simultaneous,
+
+          a.bestSong
 
         ]
-    )
+    ),
+
+    "artist_totals.csv"
+
   );
 
 
   showBarChart(
-    "アーティスト別ポイント",
+
+    "アーティスト総合ポイント",
 
     data
       .map(
-        s => s.artist
+        a => a.artist
       )
       .reverse(),
 
     data
       .map(
-        s => s.points
+        a => a.points
       )
-      .reverse()
+      .reverse(),
+
+    "ポイント"
+
   );
+
 }
 
 
 // ============================================================
-// アーティスト週間勢力
+// 上位アーティスト
 // ============================================================
 
-function showArtistShare() {
+function topArtists() {
 
-  const topArtists =
-    [...artistStats]
+  const n =
+    Number(
+      $("artistTopN").value
+    );
 
-      .sort(
-        (a, b) =>
-          b.points - a.points
+
+  return [...artistStats]
+
+    .sort(
+      (a, b) =>
+        b.points - a.points
+    )
+
+    .slice(
+      0,
+      n
+    )
+
+    .map(
+      a => a.artist
+    );
+
+}
+
+
+// ============================================================
+// 週間アーティスト数値マトリクス
+// ============================================================
+
+function buildWeeklyArtistMatrix(
+  metric
+) {
+
+  const artists =
+    topArtists();
+
+
+  const mode =
+    $("pointMode").value;
+
+
+  const totalPoints =
+    new Map(
+
+      allWeeks.map(
+        w =>
+          [
+            w,
+            0
+          ]
       )
 
-      .slice(
-        0,
-        10
+    );
+
+
+  const maps =
+    new Map(
+
+      artists.map(
+        a =>
+          [
+            a,
+            new Map()
+          ]
       )
 
-      .map(
-        x => x.artist
-      );
-
-
-  const weeklyTotal =
-    new Map();
-
-
-  for (const w of allWeeks) {
-
-    weeklyTotal.set(
-      w,
-      0
     );
-  }
 
 
-  const artistWeekly =
-    new Map();
-
-
-  for (const a of topArtists) {
-
-    artistWeekly.set(
-      a,
-      new Map()
-    );
-  }
-
-
-  for (const r of rows) {
+  for (
+    const r
+    of rows
+  ) {
 
     const p =
-      getPoint(
-        r.rank
+      point(
+        r.rank,
+        mode
       );
 
 
-    weeklyTotal.set(
+    totalPoints.set(
 
       r.week,
 
       (
-        weeklyTotal.get(
+        totalPoints.get(
           r.week
         )
-        || 0
+        ||
+        0
       )
-      + p
+
+      +
+
+      p
 
     );
 
 
     if (
-      artistWeekly.has(
+      !maps.has(
         r.mainArtist
       )
     ) {
 
-      const map =
-        artistWeekly.get(
-          r.mainArtist
-        );
-
-
-      map.set(
-
-        r.week,
-
-        (
-          map.get(
-            r.week
-          )
-          || 0
-        )
-        + p
-
-      );
+      continue;
 
     }
+
+
+    const m =
+      maps.get(
+        r.mainArtist
+      );
+
+
+    let add = 0;
+
+
+    if (
+      metric === "points"
+      ||
+      metric === "share"
+    ) {
+
+      add = p;
+
+    }
+
+
+    else if (
+      metric === "songs"
+    ) {
+
+      add = 1;
+
+    }
+
+
+    else if (
+      metric === "top10Songs"
+    ) {
+
+      add =
+        r.rank <= 10
+          ? 1
+          : 0;
+
+    }
+
+
+    m.set(
+
+      r.week,
+
+      (
+        m.get(
+          r.week
+        )
+        ||
+        0
+      )
+
+      +
+
+      add
+
+    );
+
   }
 
 
-  $("resultCard").hidden =
-    false;
+  const data =
+    allWeeks.map(
+      week => {
+
+        const vals =
+          artists.map(
+            a => {
+
+              const v =
+                maps
+                  .get(a)
+                  .get(week)
+                ||
+                0;
 
 
-  $("resultTitle").textContent =
-    "アーティスト週間勢力シェア";
+              if (
+                metric === "share"
+              ) {
+
+                const total =
+                  totalPoints.get(
+                    week
+                  )
+                  ||
+                  0;
 
 
-  $("resultInfo").textContent =
-    "各週のTOP100総ポイントに占める割合";
+                return total
 
+                  ? v
+                    /
+                    total
+                    *
+                    100
 
-  $("resultTable").innerHTML =
-    "";
-
-
-  $("chartCard").hidden =
-    false;
-
-
-  $("chartTitle").textContent =
-    "週間勢力シェア";
-
-
-  destroyChart();
-
-
-  currentChart =
-    new Chart(
-      $("chart"),
-      {
-
-        type: "line",
-
-        data: {
-
-          labels:
-            allWeeks,
-
-          datasets:
-
-            topArtists.map(
-              artist => {
-
-                const map =
-                  artistWeekly.get(
-                    artist
-                  );
-
-
-                return {
-
-                  label:
-                    artist,
-
-                  data:
-
-                    allWeeks.map(
-                      week => {
-
-                        const total =
-                          weeklyTotal.get(
-                            week
-                          );
-
-
-                        const own =
-                          map.get(
-                            week
-                          )
-                          || 0;
-
-
-                        if (!total) {
-                          return 0;
-                        }
-
-
-                        return (
-                          own
-                          / total
-                          * 100
-                        );
-                      }
-                    ),
-
-                  pointRadius: 2,
-
-                  tension: 0.2
-
-                };
+                  : 0;
 
               }
-            )
-
-        },
 
 
-        options: {
-
-          responsive: true,
-
-          maintainAspectRatio: false,
-
-          scales: {
-
-            y: {
-
-              beginAtZero: true,
-
-              title: {
-
-                display: true,
-
-                text: "シェア (%)"
-
-              }
+              return v;
 
             }
+          );
 
-          }
 
-        }
+        return {
+
+          week,
+
+          vals
+
+        };
 
       }
     );
+
+
+  return {
+
+    artists,
+
+    data
+
+  };
+
 }
 
 
 // ============================================================
-// データ品質
+// 週間アーティスト表＋グラフ
 // ============================================================
 
-function checkQuality() {
+function showWeeklyArtistMetric(
+  metric
+) {
+
+  const names = {
+
+    points:
+      [
+        "週間アーティストポイント",
+        "ポイント"
+      ],
+
+    share:
+      [
+        "週間アーティストシェア",
+        "シェア (%)"
+      ],
+
+    songs:
+      [
+        "週間ランクイン曲数",
+        "曲数"
+      ],
+
+    top10Songs:
+      [
+        "週間TOP10曲数",
+        "曲数"
+      ]
+
+  };
+
+
+  const [
+    title,
+    unit
+  ] =
+    names[metric];
+
+
+  const {
+    artists,
+    data
+  } =
+    buildWeeklyArtistMatrix(
+      metric
+    );
+
+
+  $("resultTitle").textContent =
+    `${title}【数値表】`;
+
+
+  $("resultInfo").textContent =
+    `総合ポイント上位${artists.length}組を表示。グラフとまったく同じ元データです。`;
+
+
+  const tableRows =
+    data.map(
+      d =>
+        [
+
+          d.week,
+
+          ...d.vals.map(
+            v =>
+
+              metric === "share"
+
+                ? Number(
+                    v.toFixed(3)
+                  )
+
+                : Number(
+                    v.toFixed(2)
+                  )
+
+          )
+
+        ]
+    );
+
+
+  showTable(
+
+    [
+      "週",
+      ...artists
+    ],
+
+    tableRows,
+
+    `${metric}_weekly_artist.csv`
+
+  );
+
+
+  const series =
+    artists.map(
+      (a, i) => ({
+
+        label:
+          a,
+
+        data:
+          data.map(
+            d =>
+              d.vals[i]
+          )
+
+      })
+    );
+
+
+  showMultiLineChart(
+
+    title,
+
+    data.map(
+      d => d.week
+    ),
+
+    series,
+
+    unit
+
+  );
+
+}
+
+
+// ============================================================
+// アーティスト集中度
+// ============================================================
+
+function showArtistConcentration() {
+
+  const mode =
+    $("pointMode").value;
+
+
+  const output = [];
+
+
+  for (
+    const week
+    of allWeeks
+  ) {
+
+    const weekRows =
+      rows.filter(
+        r =>
+          r.week === week
+      );
+
+
+    const artistPts =
+      new Map();
+
+
+    for (
+      const r
+      of weekRows
+    ) {
+
+      artistPts.set(
+
+        r.mainArtist,
+
+        (
+          artistPts.get(
+            r.mainArtist
+          )
+          ||
+          0
+        )
+
+        +
+
+        point(
+          r.rank,
+          mode
+        )
+
+      );
+
+    }
+
+
+    const vals =
+      [
+        ...artistPts.values()
+      ]
+      .sort(
+        (a, b) =>
+          b - a
+      );
+
+
+    const total =
+      vals.reduce(
+        (a, b) =>
+          a + b,
+        0
+      );
+
+
+    const share =
+      k =>
+
+        total
+
+          ? vals
+              .slice(
+                0,
+                k
+              )
+              .reduce(
+                (a, b) =>
+                  a + b,
+                0
+              )
+
+            /
+            total
+            *
+            100
+
+          : 0;
+
+
+    const hhi =
+
+      total
+
+        ? [
+            ...artistPts.values()
+          ]
+          .reduce(
+
+            (s, v) =>
+
+              s
+
+              +
+
+              (
+                v
+                /
+                total
+                *
+                100
+              ) ** 2,
+
+            0
+
+          )
+
+        : 0;
+
+
+    output.push({
+
+      week,
+
+      artists:
+        artistPts.size,
+
+      top1:
+        share(1),
+
+      top3:
+        share(3),
+
+      top5:
+        share(5),
+
+      hhi
+
+    });
+
+  }
+
+
+  $("resultTitle").textContent =
+    "週別アーティスト集中度";
+
+
+  $("resultInfo").textContent =
+    "TOP1/TOP3/TOP5は、その週のTOP100ポイントに占める上位アーティストの合計シェア。HHIはシェア集中度。";
+
+
+  showTable(
+
+    [
+
+      "週",
+
+      "登場アーティスト数",
+
+      "TOP1シェア%",
+
+      "TOP3シェア%",
+
+      "TOP5シェア%",
+
+      "HHI"
+
+    ],
+
+    output.map(
+      x =>
+        [
+
+          x.week,
+
+          x.artists,
+
+          x.top1.toFixed(3),
+
+          x.top3.toFixed(3),
+
+          x.top5.toFixed(3),
+
+          x.hhi.toFixed(2)
+
+        ]
+    ),
+
+    "artist_concentration.csv"
+
+  );
+
+
+  showMultiLineChart(
+
+    "週別アーティスト集中度",
+
+    output.map(
+      x => x.week
+    ),
+
+    [
+
+      {
+
+        label:
+          "TOP1",
+
+        data:
+          output.map(
+            x => x.top1
+          )
+
+      },
+
+      {
+
+        label:
+          "TOP3",
+
+        data:
+          output.map(
+            x => x.top3
+          )
+
+      },
+
+      {
+
+        label:
+          "TOP5",
+
+        data:
+          output.map(
+            x => x.top5
+          )
+
+      }
+
+    ],
+
+    "シェア (%)"
+
+  );
+
+}
+
+
+// ============================================================
+// ポイント方式比較
+// ============================================================
+
+function showPointComparison() {
+
+  const modes = [
+
+    "linear",
+
+    "log",
+
+    "reciprocal"
+
+  ];
+
+
+  const statsByMode =
+    Object.fromEntries(
+
+      modes.map(
+        m =>
+          [
+            m,
+            buildSongStatsForMode(m)
+          ]
+      )
+
+    );
+
+
+  const rankMaps = {};
+
+
+  for (
+    const m
+    of modes
+  ) {
+
+    const sorted =
+      [...statsByMode[m]]
+
+        .sort(
+          (a, b) =>
+            b.points - a.points
+        );
+
+
+    rankMaps[m] =
+      new Map(
+
+        sorted.map(
+          (s, i) =>
+            [
+              s.key,
+              i + 1
+            ]
+        )
+
+      );
+
+  }
+
+
+  const base =
+    statsByMode.log
+
+      .map(
+        s => {
+
+          const r1 =
+            rankMaps.linear.get(
+              s.key
+            );
+
+
+          const r2 =
+            rankMaps.log.get(
+              s.key
+            );
+
+
+          const r3 =
+            rankMaps.reciprocal.get(
+              s.key
+            );
+
+
+          return {
+
+            ...s,
+
+            r1,
+
+            r2,
+
+            r3,
+
+            avg:
+              mean(
+                [
+                  r1,
+                  r2,
+                  r3
+                ]
+              ),
+
+            spread:
+              Math.max(
+                r1,
+                r2,
+                r3
+              )
+
+              -
+
+              Math.min(
+                r1,
+                r2,
+                r3
+              )
+
+          };
+
+        }
+      )
+
+      .sort(
+        (a, b) =>
+          a.avg - b.avg
+      )
+
+      .slice(
+        0,
+        Number(
+          $("topN").value
+        )
+      );
+
+
+  $("resultTitle").textContent =
+    "3ポイント方式比較";
+
+
+  $("resultInfo").textContent =
+    "3方式での総合順位を並べます。順位差が大きい曲ほど、評価方式への依存が強い曲です。";
+
+
+  showTable(
+
+    [
+
+      "曲名",
+
+      "アーティスト",
+
+      "101-順位方式",
+
+      "対数方式",
+
+      "100/順位方式",
+
+      "平均順位",
+
+      "最大順位差"
+
+    ],
+
+    base.map(
+      s =>
+        [
+
+          s.song,
+
+          s.artist,
+
+          s.r1,
+
+          s.r2,
+
+          s.r3,
+
+          s.avg.toFixed(2),
+
+          s.spread
+
+        ]
+    ),
+
+    "point_system_comparison.csv"
+
+  );
+
+}
+
+
+// ============================================================
+// 品質チェック
+// ============================================================
+
+function qualityCheck() {
 
   const errors = [];
 
@@ -1889,7 +3609,10 @@ function checkQuality() {
     new Map();
 
 
-  for (const r of rows) {
+  for (
+    const r
+    of allLoadedRows
+  ) {
 
     if (
       !byWeek.has(
@@ -1901,30 +3624,64 @@ function checkQuality() {
         r.week,
         []
       );
+
     }
 
 
     byWeek
-      .get(r.week)
+      .get(
+        r.week
+      )
       .push(r);
 
 
     if (
-      r.rank < 1
+      !Number.isInteger(
+        r.rank
+      )
+
       ||
+
+      r.rank < 1
+
+      ||
+
       r.rank > 100
     ) {
 
-      errors.push(
-        [
-          "順位範囲外",
-          r.week,
-          r.song
-          + " / "
-          + r.artist
-        ]
-      );
+      errors.push([
+
+        "順位範囲外",
+
+        r.week,
+
+        `${r.song} / ${r.artist}: ${r.rank}`
+
+      ]);
+
     }
+
+
+    if (
+      !r.song
+      ||
+      !r.artist
+      ||
+      !r.week
+    ) {
+
+      errors.push([
+
+        "必須値欠落",
+
+        r.week || "(日付なし)",
+
+        `${r.song} / ${r.artist}`
+
+      ]);
+
+    }
+
   }
 
 
@@ -1933,46 +3690,104 @@ function checkQuality() {
     of byWeek.entries()
   ) {
 
-    const ranks =
+    const rankCount =
       new Map();
 
 
-    for (const r of items) {
+    const songSeen =
+      new Set();
 
-      ranks.set(
+
+    for (
+      const r
+      of items
+    ) {
+
+      rankCount.set(
+
         r.rank,
+
         (
-          ranks.get(r.rank)
-          || 0
+          rankCount.get(
+            r.rank
+          )
+          ||
+          0
         )
-        + 1
+
+        +
+
+        1
+
       );
+
+
+      const sk =
+        `${r.song}\u0000${r.artist}`;
+
+
+      if (
+        songSeen.has(sk)
+      ) {
+
+        errors.push([
+
+          "同一曲週重複",
+
+          week,
+
+          `${r.song} / ${r.artist}`
+
+        ]);
+
+      }
+
+
+      songSeen.add(sk);
+
     }
 
 
     for (
       const [rank, count]
-      of ranks.entries()
+      of rankCount.entries()
     ) {
 
-      if (count > 1) {
+      if (
+        count > 1
+      ) {
 
-        errors.push(
-          [
-            "順位重複",
-            week,
-            `${rank}位 × ${count}`
-          ]
-        );
+        errors.push([
+
+          "順位重複",
+
+          week,
+
+          `${rank}位が${count}件`
+
+        ]);
+
       }
+
     }
 
 
-    const existing =
+    const validRanks =
       new Set(
-        items.map(
-          x => x.rank
-        )
+
+        items
+
+          .filter(
+            r =>
+              r.rank >= 1
+              &&
+              r.rank <= 100
+          )
+
+          .map(
+            r => r.rank
+          )
+
       );
 
 
@@ -1986,110 +3801,93 @@ function checkQuality() {
     ) {
 
       if (
-        !existing.has(rank)
+        !validRanks.has(
+          rank
+        )
       ) {
 
-        missing.push(rank);
-      }
-    }
-
-
-    if (missing.length) {
-
-      errors.push(
-        [
-          "欠落順位",
-          week,
-          missing.join(", ")
-        ]
-      );
-    }
-
-
-    const songs =
-      new Set();
-
-
-    for (const r of items) {
-
-      const key =
-        r.song
-        + "\u0000"
-        + r.artist;
-
-
-      if (
-        songs.has(key)
-      ) {
-
-        errors.push(
-          [
-            "同一曲重複",
-            week,
-            r.song
-            + " / "
-            + r.artist
-          ]
+        missing.push(
+          rank
         );
+
       }
 
+    }
 
-      songs.add(key);
+
+    if (
+      missing.length
+    ) {
+
+      errors.push([
+
+        "欠落順位",
+
+        week,
+
+        missing.join(", ")
+
+      ]);
+
     }
 
   }
 
 
   return errors;
+
 }
 
 
 function showQuality() {
 
   const errors =
-    checkQuality();
+    qualityCheck();
 
 
   $("resultTitle").textContent =
     "データ品質チェック";
 
 
-  $("resultInfo").innerHTML =
-    `
-    検出件数:
-    <b>${errors.length}</b>
-    `;
+  $("resultInfo").textContent =
+    `検出 ${errors.length}件。欠落順位・順位重複・同一曲重複などを確認します。`;
 
 
   showTable(
+
     [
+
       "種類",
+
       "週",
+
       "内容"
+
     ],
-    errors.map(
-      row =>
-        row.map(
-          escapeHTML
-        )
-    )
+
+    errors,
+
+    "data_quality.csv"
+
   );
 
 
   $("chartCard").hidden =
     true;
+
 }
 
 
 // ============================================================
-// 週間1位
+// 1位変遷
 // ============================================================
 
-function showNumber1History() {
+function showNo1History() {
 
   const winners =
     rows.filter(
-      r => r.rank === 1
+      r =>
+        r.rank === 1
     );
 
 
@@ -2097,297 +3895,116 @@ function showNumber1History() {
     "週間1位の変遷";
 
 
-  $("resultInfo").innerHTML =
+  $("resultInfo").textContent =
     "";
 
 
   showTable(
+
     [
+
       "週",
+
       "曲名",
+
       "アーティスト"
+
     ],
 
     winners.map(
       r =>
         [
 
-          escapeHTML(
-            r.week
-          ),
+          r.week,
 
-          escapeHTML(
-            r.song
-          ),
+          r.song,
 
-          escapeHTML(
-            r.artist
-          )
+          r.artist
 
         ]
-    )
+    ),
+
+    "weekly_no1.csv"
+
   );
 
 
   $("chartCard").hidden =
     true;
+
 }
-
-
-// ============================================================
-// 曲検索
-// ============================================================
-
-$("songSearch")
-  .addEventListener(
-    "input",
-    () => {
-
-      const query =
-        $("songSearch")
-          .value
-          .trim()
-          .toLowerCase();
-
-
-      const box =
-        $("searchResults");
-
-
-      if (!query) {
-
-        box.innerHTML =
-          "";
-
-        return;
-      }
-
-
-      const hits =
-        songStats
-
-          .filter(
-            s =>
-              s.song
-                .toLowerCase()
-                .includes(query)
-
-              ||
-
-              s.artist
-                .toLowerCase()
-                .includes(query)
-          )
-
-          .slice(
-            0,
-            30
-          );
-
-
-      box.innerHTML =
-        hits.map(
-          s =>
-            `
-            <button
-              class="search-result"
-              data-key="${encodeURIComponent(s.key)}"
-            >
-              ${
-                escapeHTML(
-                  s.song
-                )
-              }
-              /
-              ${
-                escapeHTML(
-                  s.artist
-                )
-              }
-            </button>
-            `
-        )
-        .join("");
-
-
-      box
-        .querySelectorAll(
-          "button"
-        )
-        .forEach(
-          button => {
-
-            button.addEventListener(
-              "click",
-              () => {
-
-                const key =
-                  decodeURIComponent(
-                    button.dataset.key
-                  );
-
-
-                const stat =
-                  songStats.find(
-                    x =>
-                      x.key === key
-                  );
-
-
-                if (stat) {
-
-                  showSongDetail(
-                    stat
-                  );
-                }
-
-              }
-            );
-
-          }
-        );
-
-    }
-  );
 
 
 // ============================================================
 // 曲詳細
 // ============================================================
 
-function showSongDetail(s) {
-
-  $("resultCard").hidden =
-    false;
-
+function showSongDetail(
+  s
+) {
 
   $("resultTitle").textContent =
-    s.song
-    + " / "
-    + s.artist;
+    `${s.song} / ${s.artist}`;
 
 
   $("resultInfo").innerHTML = `
 
-    <div class="summary">
-
-      <div class="metric">
-
-        <div class="metric-name">
-          ポイント
-        </div>
-
-        <div class="metric-value">
-          ${s.points.toFixed(1)}
-        </div>
-
-      </div>
-
-
-      <div class="metric">
-
-        <div class="metric-name">
-          登場週数
-        </div>
-
-        <div class="metric-value">
-          ${s.weeks}
-        </div>
-
-      </div>
-
-
-      <div class="metric">
-
-        <div class="metric-name">
-          最高順位
-        </div>
-
-        <div class="metric-value">
-          ${s.bestRank}
-        </div>
-
-      </div>
-
-
-      <div class="metric">
-
-        <div class="metric-name">
-          TOP10
-        </div>
-
-        <div class="metric-value">
-          ${s.top10Weeks}
-        </div>
-
-      </div>
-
-
-      <div class="metric">
-
-        <div class="metric-name">
-          再登場
-        </div>
-
-        <div class="metric-value">
-          ${s.reentries}
-        </div>
-
-      </div>
-
-
-      <div class="metric">
-
-        <div class="metric-name">
-          順位標準偏差
-        </div>
-
-        <div class="metric-value">
-          ${s.rankStd.toFixed(1)}
-        </div>
-
-      </div>
-
-    </div>
+    ポイント ${s.points.toFixed(1)}
+    /
+    登場 ${s.weeks}週
+    /
+    最高 ${s.bestRank}位
+    /
+    平均 ${s.avgRank.toFixed(2)}位
+    /
+    TOP10 ${s.top10Weeks}週
+    /
+    再登場 ${s.reentries}回
+    /
+    順位標準偏差 ${s.rankStd.toFixed(2)}
+    /
+    最大週間上昇 ${s.biggestRise}
+    /
+    最大週間下落 ${s.biggestFall}
 
   `;
 
 
   showTable(
+
     [
+
       "週",
-      "順位"
+
+      "順位",
+
+      "変動"
+
     ],
 
     s.entries.map(
       r =>
         [
 
-          escapeHTML(
-            r.week
-          ),
+          r.week,
 
-          r.rank + "位"
+          r.rank,
+
+          r.raw["変動"]
+          ||
+          ""
 
         ]
-    )
+    ),
+
+    `${s.song}_history.csv`
+
   );
 
 
-  showSongHistoryChart(
-    s
-  );
-}
-
-
-// ============================================================
-// 順位推移
-// ============================================================
-
-function showSongHistoryChart(s) {
-
-  const values =
+  const map =
     new Map(
+
       s.entries.map(
         r =>
           [
@@ -2395,6 +4012,7 @@ function showSongHistoryChart(s) {
             r.rank
           ]
       )
+
     );
 
 
@@ -2410,21 +4028,21 @@ function showSongHistoryChart(s) {
     );
 
 
-  const weeks =
+  const labels =
     allWeeks.slice(
       first,
       last + 1
     );
 
 
-  // 圏外週をnullにする
-  // → 線がつながらない
+  const values =
+    labels.map(
+      w =>
 
-  const ranks =
-    weeks.map(
-      week =>
-        values.has(week)
-          ? values.get(week)
+        map.has(w)
+
+          ? map.get(w)
+
           : null
     );
 
@@ -2434,10 +4052,7 @@ function showSongHistoryChart(s) {
 
 
   $("chartTitle").textContent =
-    s.song
-    + " / "
-    + s.artist
-    + " 順位推移";
+    `${s.song} / ${s.artist} 順位推移`;
 
 
   destroyChart();
@@ -2445,15 +4060,17 @@ function showSongHistoryChart(s) {
 
   currentChart =
     new Chart(
+
       $("chart"),
+
       {
 
-        type: "line",
+        type:
+          "line",
 
         data: {
 
-          labels:
-            weeks,
+          labels,
 
           datasets:
             [
@@ -2464,7 +4081,7 @@ function showSongHistoryChart(s) {
                   "順位",
 
                 data:
-                  ranks,
+                  values,
 
                 spanGaps:
                   false,
@@ -2484,23 +4101,29 @@ function showSongHistoryChart(s) {
 
         options: {
 
-          responsive: true,
+          responsive:
+            true,
 
-          maintainAspectRatio: false,
+          maintainAspectRatio:
+            false,
 
           scales: {
 
             y: {
 
-              reverse: true,
+              reverse:
+                true,
 
-              min: 1,
+              min:
+                1,
 
-              max: 100,
+              max:
+                100,
 
               title: {
 
-                display: true,
+                display:
+                  true,
 
                 text:
                   "順位"
@@ -2514,109 +4137,790 @@ function showSongHistoryChart(s) {
         }
 
       }
+
     );
+
 }
 
 
 // ============================================================
-// 棒グラフ
+// アーティスト個別週次データ
 // ============================================================
 
-function showBarChart(
-  title,
-  labels,
-  values
+function showArtistDetail(
+  artist
 ) {
 
-  $("chartCard").hidden =
-    false;
+  const mode =
+    $("pointMode").value;
 
 
-  $("chartTitle").textContent =
-    title;
+  const weeksData = [];
 
 
-  destroyChart();
+  for (
+    const week
+    of allWeeks
+  ) {
+
+    const wr =
+      rows.filter(
+        r =>
+          r.week === week
+          &&
+          r.mainArtist === artist
+      );
 
 
-  currentChart =
-    new Chart(
-      $("chart"),
+    const pts =
+      wr.reduce(
+
+        (s, r) =>
+          s
+          +
+          point(
+            r.rank,
+            mode
+          ),
+
+        0
+
+      );
+
+
+    weeksData.push({
+
+      week,
+
+      points:
+        pts,
+
+      songs:
+        wr.length,
+
+      top10:
+        wr.filter(
+          r =>
+            r.rank <= 10
+        ).length,
+
+      best:
+        wr.length
+
+          ? Math.min(
+              ...wr.map(
+                r => r.rank
+              )
+            )
+
+          : ""
+
+    });
+
+  }
+
+
+  $("resultTitle").textContent =
+    `${artist} 週間データ`;
+
+
+  $("resultInfo").textContent =
+    "週ごとのポイント・ランクイン曲数・TOP10曲数・最高順位。数値のままCSV保存できます。";
+
+
+  showTable(
+
+    [
+
+      "週",
+
+      "ポイント",
+
+      "ランクイン曲数",
+
+      "TOP10曲数",
+
+      "その週の最高順位"
+
+    ],
+
+    weeksData.map(
+      x =>
+        [
+
+          x.week,
+
+          x.points.toFixed(2),
+
+          x.songs,
+
+          x.top10,
+
+          x.best
+
+        ]
+    ),
+
+    `${artist}_weekly.csv`
+
+  );
+
+
+  showMultiLineChart(
+
+    `${artist} 週間ポイント`,
+
+    weeksData.map(
+      x => x.week
+    ),
+
+    [
+
       {
 
-        type: "bar",
+        label:
+          artist,
 
-        data: {
+        data:
+          weeksData.map(
+            x => x.points
+          )
 
-          labels,
+      }
 
-          datasets:
-            [
+    ],
 
-              {
+    "ポイント"
 
-                data:
-                  values
+  );
 
-              }
-
-            ]
-
-        },
+}
 
 
-        options: {
+// ============================================================
+// 検索
+// ============================================================
 
-          indexAxis: "y",
+function updateSongSearch() {
 
-          responsive: true,
+  const q =
+    $("songSearch")
+      .value
+      .trim()
+      .toLowerCase();
 
-          maintainAspectRatio: false,
 
-          plugins: {
+  const box =
+    $("songSearchResults");
 
-            legend: {
 
-              display: false
+  if (!q) {
 
-            }
+    box.innerHTML =
+      "";
 
-          },
+    return;
 
-          scales: {
+  }
 
-            x: {
 
-              beginAtZero: true
+  const hits =
+    songStats
+
+      .filter(
+        s =>
+
+          s.song
+            .toLowerCase()
+            .includes(q)
+
+          ||
+
+          s.artist
+            .toLowerCase()
+            .includes(q)
+      )
+
+      .slice(
+        0,
+        30
+      );
+
+
+  box.innerHTML =
+    hits.map(
+      s =>
+        `
+        <button data-key="${encodeURIComponent(s.key)}">
+          ${esc(s.song)} / ${esc(s.artist)}
+        </button>
+        `
+    )
+    .join("");
+
+
+  box
+    .querySelectorAll(
+      "button"
+    )
+    .forEach(
+      btn =>
+
+        btn.addEventListener(
+          "click",
+          () => {
+
+            const s =
+              songStats.find(
+                x =>
+                  x.key
+                  ===
+                  decodeURIComponent(
+                    btn.dataset.key
+                  )
+              );
+
+
+            if (s) {
+
+              showSongDetail(s);
 
             }
 
           }
+        )
+    );
+
+}
+
+
+function updateArtistSearch() {
+
+  const q =
+    $("artistSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const box =
+    $("artistSearchResults");
+
+
+  if (!q) {
+
+    box.innerHTML =
+      "";
+
+    return;
+
+  }
+
+
+  const hits =
+    artistStats
+
+      .filter(
+        a =>
+          a.artist
+            .toLowerCase()
+            .includes(q)
+      )
+
+      .sort(
+        (a, b) =>
+          b.points - a.points
+      )
+
+      .slice(
+        0,
+        30
+      );
+
+
+  box.innerHTML =
+    hits.map(
+      a =>
+        `
+        <button data-artist="${encodeURIComponent(a.artist)}">
+          ${esc(a.artist)}
+          (${a.points.toFixed(1)} pt)
+        </button>
+        `
+    )
+    .join("");
+
+
+  box
+    .querySelectorAll(
+      "button"
+    )
+    .forEach(
+      btn =>
+
+        btn.addEventListener(
+          "click",
+          () =>
+
+            showArtistDetail(
+
+              decodeURIComponent(
+                btn.dataset.artist
+              )
+
+            )
+
+        )
+    );
+
+}
+
+
+// ============================================================
+// CSV保存
+// ============================================================
+
+function exportCurrentTable() {
+
+  if (
+    !currentTable.headers.length
+  ) {
+
+    return;
+
+  }
+
+
+  const data = [
+
+    currentTable.headers,
+
+    ...currentTable.rows
+
+  ];
+
+
+  const csv =
+    Papa.unparse(
+      data
+    );
+
+
+  const blob =
+    new Blob(
+
+      [
+        "\uFEFF"
+        +
+        csv
+      ],
+
+      {
+        type:
+          "text/csv;charset=utf-8"
+      }
+
+    );
+
+
+  const url =
+    URL.createObjectURL(
+      blob
+    );
+
+
+  const a =
+    document.createElement(
+      "a"
+    );
+
+
+  a.href =
+    url;
+
+
+  a.download =
+    currentTable.filename
+    ||
+    "analysis.csv";
+
+
+  document.body.appendChild(
+    a
+  );
+
+
+  a.click();
+
+
+  a.remove();
+
+
+  URL.revokeObjectURL(
+    url
+  );
+
+}
+
+
+// ============================================================
+// CSV読み込みイベント
+// ============================================================
+
+$("csvFile")
+  .addEventListener(
+    "change",
+    e => {
+
+      const file =
+        e.target.files[0];
+
+
+      if (!file) {
+
+        return;
+
+      }
+
+
+      $("status").textContent =
+        "CSV読み込み中…";
+
+
+      Papa.parse(
+
+        file,
+
+        {
+
+          header:
+            true,
+
+          skipEmptyLines:
+            true,
+
+
+          complete:
+            result => {
+
+              const fields =
+                result.meta.fields
+                ||
+                [];
+
+
+              const missing =
+                validateRequiredColumns(
+                  fields
+                );
+
+
+              if (
+                missing.length
+              ) {
+
+                $("status").textContent =
+                  `必要な列がありません: ${missing.join(", ")}`;
+
+                return;
+
+              }
+
+
+              allLoadedRows =
+                result.data
+
+                  .map(
+                    normalizeRow
+                  )
+
+                  .filter(
+                    r =>
+                      r.week
+                      &&
+                      Number.isInteger(
+                        r.rank
+                      )
+                  )
+
+                  .sort(
+                    (a, b) =>
+                      a.week.localeCompare(
+                        b.week
+                      )
+                      ||
+                      a.rank - b.rank
+                  );
+
+
+              if (
+                !allLoadedRows.length
+              ) {
+
+                $("status").textContent =
+                  "有効なデータがありません。";
+
+                return;
+
+              }
+
+
+              const weeks =
+                [
+                  ...new Set(
+                    allLoadedRows.map(
+                      r => r.week
+                    )
+                  )
+                ]
+                .sort();
+
+
+              $("startDate").value =
+                weeks[0];
+
+
+              $("endDate").value =
+                weeks[
+                  weeks.length - 1
+                ];
+
+
+              $("startDate").min =
+                weeks[0];
+
+
+              $("startDate").max =
+                weeks[
+                  weeks.length - 1
+                ];
+
+
+              $("endDate").min =
+                weeks[0];
+
+
+              $("endDate").max =
+                weeks[
+                  weeks.length - 1
+                ];
+
+
+              applyDateFilter();
+
+
+              $("menuCard").hidden =
+                false;
+
+
+              $("searchCard").hidden =
+                false;
+
+
+              $("status").textContent =
+                `読み込み完了: ${file.name}`;
+
+
+              showSongRanking(
+
+                "points",
+
+                "曲別ポイント"
+
+              );
+
+            },
+
+
+          error:
+            err => {
+
+              $("status").textContent =
+                `CSV読み込みエラー: ${err.message}`;
+
+            }
 
         }
 
+      );
+
+    }
+  );
+
+
+// ============================================================
+// 期間イベント
+// ============================================================
+
+$("applyFilter")
+  .addEventListener(
+    "click",
+    () => {
+
+      if (
+        !allLoadedRows.length
+      ) {
+
+        return;
+
       }
-    );
-}
+
+
+      if (
+        $("startDate").value
+
+        &&
+
+        $("endDate").value
+
+        &&
+
+        $("startDate").value
+        >
+        $("endDate").value
+      ) {
+
+        alert(
+          "開始週が終了週より後になっています。"
+        );
+
+        return;
+
+      }
+
+
+      applyDateFilter();
+
+
+      showSongRanking(
+
+        "points",
+
+        "曲別ポイント"
+
+      );
+
+    }
+  );
+
+
+$("resetFilter")
+  .addEventListener(
+    "click",
+    () => {
+
+      if (
+        !allLoadedRows.length
+      ) {
+
+        return;
+
+      }
+
+
+      const weeks =
+        [
+          ...new Set(
+            allLoadedRows.map(
+              r => r.week
+            )
+          )
+        ]
+        .sort();
+
+
+      $("startDate").value =
+        weeks[0];
+
+
+      $("endDate").value =
+        weeks[
+          weeks.length - 1
+        ];
+
+
+      applyDateFilter();
+
+
+      showSongRanking(
+
+        "points",
+
+        "曲別ポイント"
+
+      );
+
+    }
+  );
 
 
 // ============================================================
-// Chart削除
+// ポイント方式変更
 // ============================================================
 
-function destroyChart() {
+$("pointMode")
+  .addEventListener(
+    "change",
+    () => {
 
-  if (currentChart) {
+      if (
+        !rows.length
+      ) {
 
-    currentChart.destroy();
+        return;
 
-    currentChart = null;
-  }
-}
+      }
+
+
+      rebuild();
+
+
+      showSummary();
+
+
+      showSongRanking(
+
+        "points",
+
+        "曲別ポイント"
+
+      );
+
+    }
+  );
 
 
 // ============================================================
-// ボタン
+// 検索イベント
+// ============================================================
+
+$("songSearch")
+  .addEventListener(
+    "input",
+    updateSongSearch
+  );
+
+
+$("artistSearch")
+  .addEventListener(
+    "input",
+    updateArtistSearch
+  );
+
+
+// ============================================================
+// CSV保存
+// ============================================================
+
+$("exportTable")
+  .addEventListener(
+    "click",
+    exportCurrentTable
+  );
+
+
+// ============================================================
+// メニューイベント
 // ============================================================
 
 document
@@ -2624,18 +4928,18 @@ document
     "[data-action]"
   )
   .forEach(
-    button => {
+    btn => {
 
-      button.addEventListener(
+      btn.addEventListener(
         "click",
         () => {
 
-          const action =
-            button.dataset.action;
+          const a =
+            btn.dataset.action;
 
 
           if (
-            action === "points"
+            a === "songPoints"
           ) {
 
             showSongRanking(
@@ -2647,7 +4951,7 @@ document
 
 
           else if (
-            action === "weeks"
+            a === "songWeeks"
           ) {
 
             showSongRanking(
@@ -2659,7 +4963,7 @@ document
 
 
           else if (
-            action === "streak"
+            a === "songStreak"
           ) {
 
             showSongRanking(
@@ -2671,7 +4975,7 @@ document
 
 
           else if (
-            action === "top10"
+            a === "songTop10"
           ) {
 
             showSongRanking(
@@ -2683,7 +4987,7 @@ document
 
 
           else if (
-            action === "no1"
+            a === "songNo1"
           ) {
 
             showSongRanking(
@@ -2695,7 +4999,7 @@ document
 
 
           else if (
-            action === "late"
+            a === "lateBloomers"
           ) {
 
             showLateBloomers();
@@ -2704,7 +5008,51 @@ document
 
 
           else if (
-            action === "artists"
+            a === "stableSongs"
+          ) {
+
+            showSongRanking(
+
+              "rankStd",
+
+              "順位標準偏差",
+
+              true,
+
+              s =>
+                s.weeks >= 5
+
+            );
+
+          }
+
+
+          else if (
+            a === "reentries"
+          ) {
+
+            showSongRanking(
+              "reentries",
+              "再登場回数"
+            );
+
+          }
+
+
+          else if (
+            a === "biggestRise"
+          ) {
+
+            showSongRanking(
+              "biggestRise",
+              "週間最大上昇"
+            );
+
+          }
+
+
+          else if (
+            a === "artistPoints"
           ) {
 
             showArtistRanking();
@@ -2713,16 +5061,69 @@ document
 
 
           else if (
-            action === "share"
+            a === "weeklyArtistPoints"
           ) {
 
-            showArtistShare();
+            showWeeklyArtistMetric(
+              "points"
+            );
 
           }
 
 
           else if (
-            action === "quality"
+            a === "weeklyArtistShare"
+          ) {
+
+            showWeeklyArtistMetric(
+              "share"
+            );
+
+          }
+
+
+          else if (
+            a === "weeklyArtistSongs"
+          ) {
+
+            showWeeklyArtistMetric(
+              "songs"
+            );
+
+          }
+
+
+          else if (
+            a === "weeklyArtistTop10Songs"
+          ) {
+
+            showWeeklyArtistMetric(
+              "top10Songs"
+            );
+
+          }
+
+
+          else if (
+            a === "artistConcentration"
+          ) {
+
+            showArtistConcentration();
+
+          }
+
+
+          else if (
+            a === "pointCompare"
+          ) {
+
+            showPointComparison();
+
+          }
+
+
+          else if (
+            a === "quality"
           ) {
 
             showQuality();
@@ -2731,37 +5132,14 @@ document
 
 
           else if (
-            action === "number1"
+            a === "no1History"
           ) {
 
-            showNumber1History();
+            showNo1History();
 
           }
 
         }
-      );
-
-    }
-  );
-
-
-// ============================================================
-// 表示件数変更
-// ============================================================
-
-$("topN")
-  .addEventListener(
-    "change",
-    () => {
-
-      if (!rows.length) {
-        return;
-      }
-
-
-      showSongRanking(
-        "points",
-        "曲別ポイント"
       );
 
     }
