@@ -46,12 +46,8 @@
         <label for="endDate">終了週</label>
         <input id="endDate" type="date">
       </div>
-      <div class="control button-control">
-        <button id="applyFilter" class="primary">期間を適用</button>
-      </div>
-      <div class="control button-control">
-        <button id="resetFilter">全期間に戻す</button>
-      </div>
+      <div class="control button-control"><button id="applyFilter" type="button" class="primary">期間を適用</button></div>
+      <div class="control button-control"><button id="resetFilter" type="button">全期間に戻す</button></div>
     </div>
     <div id="status" class="notice">CSVを選択してください。</div>
   </section>
@@ -78,7 +74,7 @@
         <input id="artistCount" type="number" value="10" min="1" step="1">
       </div>
       <div class="control wide">
-        <label for="artistPicker">個別選択（Ctrl/⌘で複数選択）</label>
+        <label for="artistPicker">個別選択（複数選択可）</label>
         <select id="artistPicker" multiple size="6"></select>
       </div>
     </div>
@@ -88,60 +84,69 @@
   <section id="menuCard" class="card" hidden>
     <h2>4. 分析メニュー</h2>
 
-    <h3>曲</h3>
+    <h3>曲・総合</h3>
     <div class="menu-grid">
-      <button data-action="songPoints">曲別ポイント</button>
-      <button data-action="songWeeks">登場週数</button>
-      <button data-action="songStreak">最長連続登場</button>
-      <button data-action="songTop10">TOP10滞在</button>
-      <button data-action="songNo1">1位獲得週</button>
-      <button data-action="lateBloomers">遅咲き曲</button>
-      <button data-action="stableSongs">順位安定曲</button>
-      <button data-action="volatileSongs">乱高下曲</button>
-      <button data-action="reentries">再登場回数</button>
-      <button data-action="biggestRise">週間最大上昇</button>
-      <button data-action="biggestFall">週間最大下落</button>
-      <button data-action="peakDelay">ピーク到達が遅い曲</button>
-      <button data-action="earlyHit">初動依存度</button>
-      <button data-action="longTail">後半持続型</button>
-      <button data-action="pointCompare">3ポイント方式比較</button>
+      <button type="button" data-action="songPoints">曲別ポイント</button>
+      <button type="button" data-action="songWeeks">登場週数</button>
+      <button type="button" data-action="songStreak">最長連続登場</button>
+      <button type="button" data-action="songUpperResidence">上位滞在</button>
+      <button type="button" data-action="songNo1">1位獲得週</button>
     </div>
+
+    <h3>曲・推移</h3>
+    <div class="menu-grid">
+      <button type="button" data-action="lateBloomers">遅咲き・上昇型</button>
+      <button type="button" data-action="songVolatility">順位変動度</button>
+      <button type="button" data-action="reentries">再登場回数</button>
+      <button type="button" data-action="hitCenter">ヒット重心</button>
+    </div>
+    <p class="muted">最大上昇・最大下落・順位標準偏差・滞在率などは、曲の個別検索で詳細表示します。</p>
 
     <h3>アーティスト総合</h3>
     <div class="menu-grid">
-      <button data-action="artistPoints">総合ポイント</button>
-      <button data-action="artistSongs">曲数</button>
-      <button data-action="artistChartWeeks">登場週数</button>
-      <button data-action="artistTop10">TOP10曲週</button>
-      <button data-action="artistNo1">1位曲週</button>
-      <button data-action="artistEfficiency">1曲あたりポイント</button>
-      <button data-action="artistWeeklyEfficiency">登場週あたりポイント</button>
-      <button data-action="artistSimultaneous">同時ランクイン最大</button>
+      <button type="button" data-action="artistPoints">総合ポイント</button>
+      <button type="button" data-action="artistSongs">曲数</button>
+      <button type="button" data-action="artistChartWeeks">登場週数</button>
+      <button type="button" data-action="artistTop10Songs">TOP10到達曲数</button>
+      <button type="button" data-action="artistNo1Songs">1位到達曲数</button>
+      <button type="button" data-action="artistTop10Rate">TOP10ヒット率</button>
+      <button type="button" data-action="artistTop10SongWeeks">TOP10延べ曲週</button>
+      <button type="button" data-action="artistAvgSongPoints">平均曲ポイント</button>
+      <button type="button" data-action="artistWeeklyEfficiency">活動週あたりポイント</button>
+      <button type="button" data-action="artistSimultaneous">同時ランクイン最大</button>
+      <button type="button" data-action="artistDependency">代表曲依存度</button>
     </div>
 
     <h3>週間アーティスト変遷（数値表＋グラフ）</h3>
     <div class="menu-grid">
-      <button data-action="weeklyArtistPoints">週間ポイント</button>
-      <button data-action="weeklyArtistCumulative">累積ポイント</button>
-      <button data-action="weeklyArtistShare">週間シェア</button>
-      <button data-action="weeklyArtistSongs">ランクイン曲数</button>
-      <button data-action="weeklyArtistTop10Songs">TOP10曲数</button>
-      <button data-action="weeklyArtistTop20Songs">TOP20曲数</button>
-      <button data-action="weeklyArtistNo1Songs">1位曲数</button>
-      <button data-action="weeklyArtistBestRank">最高順位</button>
-      <button data-action="weeklyArtistAvgRank">平均順位</button>
-      <button data-action="weeklyArtistMedianRank">中央値順位</button>
+      <button type="button" data-action="weeklyArtistPoints">週間ポイント</button>
+      <button type="button" data-action="weeklyArtistMoving4">4週移動平均</button>
+      <button type="button" data-action="weeklyArtistCumulative">累積ポイント</button>
+      <button type="button" data-action="weeklyArtistRank">週間アーティスト順位</button>
+      <button type="button" data-action="weeklyArtistSongs">ランクイン曲数</button>
+      <button type="button" data-action="weeklyArtistTop10Songs">TOP10曲数</button>
+      <button type="button" data-action="weeklyArtistNo1Songs">1位曲数</button>
+      <button type="button" data-action="weeklyArtistBestRank">最高順位</button>
+    </div>
+    <p class="muted">週間シェアは完全TOP100では週間ポイントの定数倍になるため、独立項目から外しました。平均順位・中央値順位は個別詳細に残しています。</p>
+
+    <h3>市場・流動性</h3>
+    <div class="menu-grid">
+      <button type="button" data-action="weeklyMarket">週別チャート構造</button>
+      <button type="button" data-action="artistConcentration">アーティスト集中度</button>
+      <button type="button" data-action="weeklyTurnover">チャート流動性</button>
     </div>
 
-    <h3>週・市場</h3>
+    <h3>チャート履歴</h3>
     <div class="menu-grid">
-      <button data-action="weeklyMarket">週別市場統計</button>
-      <button data-action="artistConcentration">アーティスト集中度</button>
-      <button data-action="songConcentration">曲順位ポイント集中度</button>
-      <button data-action="weeklyTurnover">新規・脱落・再登場</button>
-      <button data-action="weeklyNo1">週間1位変遷</button>
-      <button data-action="weeklyTop10">週間TOP10一覧</button>
-      <button data-action="quality">データ品質チェック</button>
+      <button type="button" data-action="weeklyNo1">週間1位変遷</button>
+      <button type="button" data-action="weeklyTop10">週間TOP10一覧</button>
+    </div>
+
+    <h3>データ・分析手法</h3>
+    <div class="menu-grid">
+      <button type="button" data-action="quality">データ品質チェック</button>
+      <button type="button" data-action="pointCompare">ポイント方式感度分析</button>
     </div>
   </section>
 
@@ -155,10 +160,11 @@
       </div>
       <div>
         <label for="artistSearch">アーティストを検索</label>
-        <input id="artistSearch" type="search" placeholder="例: Mr.Children">
+        <input id="artistSearch" type="search" placeholder="例: サザンオールスターズ">
         <div id="artistSearchResults" class="search-results"></div>
       </div>
     </div>
+    <p class="muted">候補を押すと下の「個別分析」へ自動スクロールします。アーティストは総合プロフィール・楽曲一覧・週別推移まで表示します。</p>
   </section>
 
   <section id="resultCard" class="card" hidden>
@@ -167,9 +173,11 @@
         <h2 id="resultTitle">結果</h2>
         <div id="resultInfo" class="muted"></div>
       </div>
-      <button id="exportTable" class="compact">現在の表をCSV保存</button>
+      <button id="exportTable" type="button" class="compact">現在の主表をCSV保存</button>
     </div>
+    <div id="resultSummary" class="summary-grid result-summary"></div>
     <div id="resultTable"></div>
+    <div id="resultExtra"></div>
   </section>
 
   <section id="chartCard" class="card" hidden>
